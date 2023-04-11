@@ -1,0 +1,45 @@
+<?php declare(strict_types=1);
+
+use App\Modules\Chats\Models\Chat;
+use App\Modules\Chats\Modules\Messages\Constants\TypeConstants;
+use App\Modules\Chats\Modules\Messages\Models\Message;
+use App\Modules\Users\Models\User;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('messages', function (Blueprint $table): void {
+            $table->id();
+
+            $table
+                ->foreignIdFor(Chat::class)
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table
+                ->foreignIdFor(User::class)
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table
+                ->foreignIdFor(Message::class, 'reply_id')
+                ->nullable()
+                ->constrained('messages')
+                ->nullOnDelete();
+
+            $table->text('content')->nullable();
+            $table->string('type')->default(TypeConstants::SIMPLE);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('messages');
+    }
+};
